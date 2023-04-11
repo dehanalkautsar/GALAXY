@@ -34,6 +34,8 @@ def main():
                              "Stay 'None': infer on entrie test dataset.")
     parser.add_argument("--hparams_file", type=str, default=None,
                         help="Loading hparams setting from file(.json format).")
+    parser.add_argument("--exp_setting", type=str, default='en',
+                        help="Set the experiment setting [Dehan parsing].")
     BPETextField.add_cmdline_argument(parser)
     Dataset.add_cmdline_argument(parser)
     Trainer.add_cmdline_argument(parser)

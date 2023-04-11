@@ -2,15 +2,15 @@
 set -ux
 
 # CUDA environment settings.
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 
 # Parameters.
 DATA_NAME=camrest
 PROJECT_NAME=GALAXY
 LOAD_MODEL_NAME=GALAXY
 MODEL=UnifiedTransformer
-PROJECT_ROOT=/data/nt12_ssd_gluster/myself/${PROJECT_NAME}
-SAVE_ROOT=/data/nt12_hdd_gluster/myself/${PROJECT_NAME}
+PROJECT_ROOT=.
+SAVE_ROOT=.
 VOCAB_PATH=${PROJECT_ROOT}/model/Bert/vocab.txt
 INIT_CHECKPOINT=${PROJECT_ROOT}/model/${LOAD_MODEL_NAME}
 WITH_JOINT_ACT=false
@@ -31,11 +31,13 @@ SEED=10
 LR=1e-4
 BCE_RATIO=1.0
 DROPOUT_RATIO=0.1
-SAVE_DIR=${SAVE_ROOT}/outputs/${DATA_NAME}/117-26
+SAVE_DIR=${SAVE_ROOT}/outputs/${DATA_NAME}/en
+EXP_SETTING=en
 
 # Main run.
 python -u run.py \
   --do_train=true \
+  --do_test=true \
   --model=${MODEL} \
   --save_dir=${SAVE_DIR} \
   --data_name=${DATA_NAME} \
@@ -71,4 +73,5 @@ python -u run.py \
   --num_type_embeddings=2 \
   --token_loss=true \
   --save_checkpoint=true \
-  --data_processed=data_for_galaxy_encoded.data.json
+  --data_processed=data_for_galaxy_encoded.data.json \
+  --exp_setting=${EXP_SETTING}

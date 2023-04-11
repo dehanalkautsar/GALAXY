@@ -1232,7 +1232,13 @@ class CamRestBPETextField(BPETextField):
         self.wn = WordNetLemmatizer()
 
         # extra part
-        self.dataset_path = 'data/camrest'
+        if hparams.exp_setting == 'en':
+            self.dataset_path = 'data/camrest/en_camrest'
+        elif hparams.exp_setting == 'id':
+            self.dataset_path = 'data/camrest/id_camrest'
+        elif hparams.exp_setting == 'bi':
+            self.dataset_path = 'data/camrest/bi_camrest'
+
         self.raw_data_path = os.path.join(self.dataset_path, 'CamRest676.json')
         self.data_path = os.path.join(self.dataset_path, 'CamRest676_preprocessed_add_request_47.json')
 
@@ -1278,7 +1284,7 @@ class CamRestBPETextField(BPETextField):
         all_slots = ['id', 'name', 'food', 'pricerange','area', 'phone', 'postcode', 'address',
                             'type', 'location']
         if save_dir is None:
-            save_dir = 'data/CamRest676/CamRestDB.db'
+            save_dir = f'data/CamRest676/{self.dataset_path}/CamRestDB.db'
         conn = sql.connect(save_dir)
         cur = conn.cursor()
         # create table
@@ -1420,7 +1426,7 @@ class CamRestBPETextField(BPETextField):
 
     def _build_vocab(self):
         self.vocab = utils.CamKVRVocab(3000)
-        vp = os.path.join(self.data_root, 'data/camrest/vocab')
+        vp = os.path.join(self.data_root, self.dataset_path, 'vocab')
         self.vocab.load_vocab(vp)
         return self.vocab.vocab_size
 
@@ -1454,7 +1460,7 @@ class CamRestBPETextField(BPETextField):
         self.data = {'train': train, 'dev': dev, 'test': test}
 
         if save_temp:  # save encoded data
-            encoded_file = os.path.join(self.data_root, f'data/camrest', self.data_processed)
+            encoded_file = os.path.join(self.data_root, self.dataset_path, self.data_processed)
 
             if os.path.exists(encoded_file):
                 print('Reading encoded data from {}'.format(encoded_file))
