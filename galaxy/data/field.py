@@ -796,7 +796,14 @@ class KvretBPETextField(BPETextField):
         self.wn = WordNetLemmatizer()
 
         # extra part
-        self.dataset_path = 'data/kvret'
+
+        if hparams.exp_setting == 'en':
+            self.dataset_path = 'data/kvret/en_smd'
+        elif hparams.exp_setting == 'id':
+            self.dataset_path = 'data/kvret/id_smd'
+        elif hparams.exp_setting == 'bi':
+            self.dataset_path = 'data/kvret/bi_smd'
+        
         self.raw_data_path = {
             'train': os.path.join(self.dataset_path, 'kvret_train_public.json'),
             'dev': os.path.join(self.dataset_path, 'kvret_dev_public.json'),
@@ -978,7 +985,7 @@ class KvretBPETextField(BPETextField):
 
     def _build_vocab(self):
         self.vocab = utils.CamKVRVocab(3000)
-        vp = os.path.join(self.data_root, 'data/kvret/vocab')
+        vp = os.path.join(self.data_root, self.dataset_path, 'vocab')
         self.vocab.load_vocab(vp)
         return self.vocab.vocab_size
 
@@ -991,7 +998,7 @@ class KvretBPETextField(BPETextField):
             self.data[d] = json.loads(open(self.data_path[d], 'r', encoding='utf-8').read().lower())
 
         if save_temp:  # save encoded data
-            encoded_file = os.path.join(self.data_root, f'data/kvret', self.data_processed)
+            encoded_file = os.path.join(self.data_root, self.dataset_path, self.data_processed)
 
             if os.path.exists(encoded_file):
                 print('Reading encoded data from {}'.format(encoded_file))
