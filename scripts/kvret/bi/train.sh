@@ -33,6 +33,7 @@ BCE_RATIO=1.0
 DROPOUT_RATIO=0.35
 SAVE_DIR=${SAVE_ROOT}/outputs/${DATA_NAME}/bi
 EXP_SETTING=bi
+MODE=train
 
 # Main run.
 python -u run.py \
@@ -73,4 +74,5 @@ python -u run.py \
   --token_loss=true \
   --save_checkpoint=true \
   --data_processed=data_for_galaxy_encoded.data.json \
-  --exp_setting=${EXP_SETTING}
+  --exp_setting=${EXP_SETTING} \
+  --mode=${MODE}

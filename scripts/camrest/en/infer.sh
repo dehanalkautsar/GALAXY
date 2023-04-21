@@ -12,7 +12,7 @@ PROJECT_ROOT=.
 SAVE_ROOT=.
 VOCAB_PATH=${PROJECT_ROOT}/model/Bert/vocab.txt
 LOAD_MODEL_DIR=en
-LOAD_MODEL_NAME=state_epoch_18 # change this
+LOAD_MODEL_NAME=state_epoch_61 # change this
 INIT_CHECKPOINT=${SAVE_ROOT}/outputs/${DATA_NAME}/${LOAD_MODEL_DIR}/${LOAD_MODEL_NAME}
 WITH_JOINT_ACT=false
 USE_TRUE_PREV_BSPN=true
@@ -28,6 +28,7 @@ NUM_GPU=1
 SEED=10
 SAVE_DIR=${SAVE_ROOT}/outputs/${DATA_NAME}/en.infer
 EXP_SETTING=en
+MODE=infer
 
 # Main run.
 python -u run.py \
@@ -55,4 +56,5 @@ python -u run.py \
   --num_act=20 \
   --num_type_embeddings=2 \
   --data_processed=data_for_galaxy_encoded.data.json \
-  --exp_setting=${EXP_SETTING}
+  --exp_setting=${EXP_SETTING} \
+  --mode=${MODE}

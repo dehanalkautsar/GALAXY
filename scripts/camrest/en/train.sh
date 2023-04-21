@@ -25,7 +25,7 @@ GRADIENT_ACCUMULATION_STEPS=1
 WARMUP_STEPS=-1
 BATCH_SIZE=32
 BEAM_SIZE=1
-NUM_EPOCH=60
+NUM_EPOCH=130
 NUM_GPU=1
 SEED=10
 LR=1e-4
@@ -33,6 +33,7 @@ BCE_RATIO=1.0
 DROPOUT_RATIO=0.1
 SAVE_DIR=${SAVE_ROOT}/outputs/${DATA_NAME}/en
 EXP_SETTING=en
+MODE=train
 
 # Main run.
 python -u run.py \
@@ -74,4 +75,5 @@ python -u run.py \
   --token_loss=true \
   --save_checkpoint=true \
   --data_processed=data_for_galaxy_encoded.data.json \
-  --exp_setting=${EXP_SETTING}
+  --exp_setting=${EXP_SETTING} \
+  --mode=${MODE}

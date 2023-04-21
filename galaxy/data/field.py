@@ -798,29 +798,58 @@ class KvretBPETextField(BPETextField):
         # extra part
 
         if hparams.exp_setting == 'en':
-            self.dataset_path = 'data/kvret/en_smd'
+            self.dataset_path = ['data/kvret/en_smd']
+            self.db_ontology_path = 'data/kvret/en_smd'
         elif hparams.exp_setting == 'id':
-            self.dataset_path = 'data/kvret/id_smd'
+            self.dataset_path = ['data/kvret/id_smd']
+            self.db_ontology_path = 'data/kvret/id_smd'
+        elif hparams.exp_setting == 'cross':
+            self.db_ontology_path = 'data/kvret/bi_smd'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/kvret/en_smd']
+            elif hparams.mode == 'infer':
+                self.dataset_path = ['data/kvret/id_smd']
         elif hparams.exp_setting == 'bi':
-            self.dataset_path = 'data/kvret/bi_smd'
-        
-        self.raw_data_path = {
-            'train': os.path.join(self.dataset_path, 'kvret_train_public.json'),
-            'dev': os.path.join(self.dataset_path, 'kvret_dev_public.json'),
-            'test': os.path.join(self.dataset_path, 'kvret_test_public.json')
-        }
+            self.dataset_path = ['data/kvret/en_smd','data/kvret/id_smd']
+            self.db_ontology_path = 'data/kvret/bi_smd'
+        elif hparams.exp_setting == 'bi-en':
+            self.db_ontology_path = 'data/kvret/bi_smd'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/kvret/en_smd', 'data/kvret/id_smd']
+            if hparams.mode == 'infer':
+                self.dataset_path = ['data/kvret/en_smd']
+        elif hparams.exp_setting == 'bi-id':
+            self.db_ontology_path = 'data/kvret/bi_smd'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/kvret/en_smd', 'data/kvret/id_smd']
+            if hparams.mode == 'infer':
+                self.dataset_path = ['data/kvret/id_smd']
 
-        self.ontology_path = os.path.join(self.dataset_path, 'kvret_entities.json')
+
+        self.raw_data_path = {
+            'train': [os.path.join(path, 'kvret_train_public.json') for path in self.dataset_path],
+            'dev': [os.path.join(path, 'kvret_dev_public.json') for path in self.dataset_path],
+            'test': [os.path.join(path, 'kvret_test_public.json') for path in self.dataset_path]
+        }
+        self.data_path = {
+            'train': [os.path.join(path, 'train_preprocessed.json') for path in self.dataset_path],
+            'dev': [os.path.join(path, 'dev_preprocessed.json') for path in self.dataset_path],
+            'test': [os.path.join(path, 'test_preprocessed.json') for path in self.dataset_path]
+        }
+        print("data_path:")
+        print("train")
+        print(self.data_path['train'])
+        print("dev")
+        print(self.data_path['dev'])
+        print("test")
+        print(self.data_path['test'])
+
+        self.ontology_path = os.path.join(self.db_ontology_path, 'kvret_entities.json')
         self.otlg = KvretOntology(self.ontology_path)
         self.requestable_slots = self.otlg.requestable_slots
         self.informable_slots = self.otlg.informable_slots
         self.all_domains = self.otlg.all_domains
 
-        self.data_path = {
-            'train': os.path.join(self.dataset_path, 'train_preprocessed.json'),
-            'dev': os.path.join(self.dataset_path, 'dev_preprocessed.json'),
-            'test': os.path.join(self.dataset_path, 'test_preprocessed.json')
-        }
 
         self.entities = json.loads(open(self.ontology_path).read().lower())
         self.get_value_to_slot_mapping(self.entities)
@@ -985,17 +1014,23 @@ class KvretBPETextField(BPETextField):
 
     def _build_vocab(self):
         self.vocab = utils.CamKVRVocab(3000)
-        vp = os.path.join(self.data_root, self.dataset_path, 'vocab')
+        vp = os.path.join(self.data_root, self.db_ontology_path, 'vocab')
         self.vocab.load_vocab(vp)
         return self.vocab.vocab_size
 
-    def _load_data(self, save_temp=True):
+    def _load_data(self, save_temp=False):
         """
         load processed data and encode, or load already encoded data
         """
-        self.data = {}
+        self.data = {'train':{}, 'dev':{}, 'test':{}}
         for d in ['train', 'dev', 'test']:
-            self.data[d] = json.loads(open(self.data_path[d], 'r', encoding='utf-8').read().lower())
+            cnt_dialogue = 0
+            for file in self.data_path[d]:
+                temp_data = json.loads(open(file, 'r', encoding='utf-8').read().lower())
+                # update dialogue id bcs of dataset merging
+                for (k,v) in temp_data.items():
+                    self.data[d].update({str(int(k)+cnt_dialogue):v})
+                cnt_dialogue += len(temp_data)
 
         if save_temp:  # save encoded data
             encoded_file = os.path.join(self.data_root, self.dataset_path, self.data_processed)
@@ -1240,22 +1275,48 @@ class CamRestBPETextField(BPETextField):
 
         # extra part
         if hparams.exp_setting == 'en':
-            self.dataset_path = 'data/camrest/en_camrest'
+            self.dataset_path = ['data/camrest/en_camrest']
+            self.db_ontology_path = 'data/camrest/en_camrest'
         elif hparams.exp_setting == 'id':
-            self.dataset_path = 'data/camrest/id_camrest'
+            self.dataset_path = ['data/camrest/id_camrest']
+            self.db_ontology_path = 'data/camrest/id_camrest'
+        elif hparams.exp_setting == 'cross':
+            self.db_ontology_path = 'data/camrest/bi_camrest'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/camrest/en_camrest']
+            elif hparams.mode == 'infer':
+                self.dataset_path = ['data/camrest/id_camrest']
         elif hparams.exp_setting == 'bi':
-            self.dataset_path = 'data/camrest/bi_camrest'
+            self.dataset_path = ['data/camrest/en_camrest', 'data/camrest/id_camrest']
+            self.db_ontology_path = 'data/camrest/bi_camrest'
+        elif hparams.exp_setting == 'bi-en':
+            self.db_ontology_path = 'data/camrest/bi_camrest'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/camrest/en_camrest', 'data/camrest/id_camrest']
+            if hparams.mode == 'infer':
+                self.dataset_path = ['data/camrest/en_camrest']
+        elif hparams.exp_setting == 'bi-id':
+            self.db_ontology_path = 'data/camrest/bi_camrest'
+            if hparams.mode == 'train':
+                self.dataset_path = ['data/camrest/en_camrest', 'data/camrest/id_camrest']
+            if hparams.mode == 'infer':
+                self.dataset_path = ['data/camrest/id_camrest']
 
-        self.raw_data_path = os.path.join(self.dataset_path, 'CamRest676.json')
-        self.data_path = os.path.join(self.dataset_path, 'CamRest676_preprocessed_add_request_47.json')
+        self.raw_data_path = []
+        self.data_path = []
+        for path in self.dataset_path:
+            self.raw_data_path.extend([os.path.join(path, 'CamRest676.json')])
+            self.data_path.extend([os.path.join(path, 'CamRest676_preprocessed_add_request_47.json')])
+        print("data_path:")
+        print(self.data_path)
 
-        self.ontology_path = os.path.join(self.dataset_path, 'CamRestOTGY.json')
+        self.ontology_path = os.path.join(self.db_ontology_path, 'CamRestOTGY.json')
         self.otlg = CamRest676Ontology(self.ontology_path)
         self.requestable_slots = self.otlg.requestable_slots
         self.informable_slots = self.otlg.informable_slots
         self.all_domains = self.otlg.all_domains
 
-        self.db = os.path.join(self.dataset_path, 'CamRestDB.db')
+        self.db = os.path.join(self.db_ontology_path, 'CamRestDB.db')
         db_json_path = self.db.replace('.db', '.json')
         self.db_json = json.loads(open(db_json_path).read().lower())
         if not os.path.exists(self.db):
@@ -1291,7 +1352,7 @@ class CamRestBPETextField(BPETextField):
         all_slots = ['id', 'name', 'food', 'pricerange','area', 'phone', 'postcode', 'address',
                             'type', 'location']
         if save_dir is None:
-            save_dir = f'data/CamRest676/{self.dataset_path}/CamRestDB.db'
+            save_dir = f'data/CamRest676/{self.db_ontology_path}/CamRestDB.db'
         conn = sql.connect(save_dir)
         cur = conn.cursor()
         # create table
@@ -1433,7 +1494,7 @@ class CamRestBPETextField(BPETextField):
 
     def _build_vocab(self):
         self.vocab = utils.CamKVRVocab(3000)
-        vp = os.path.join(self.data_root, self.dataset_path, 'vocab')
+        vp = os.path.join(self.data_root, self.db_ontology_path, 'vocab')
         self.vocab.load_vocab(vp)
         return self.vocab.vocab_size
 
@@ -1458,12 +1519,26 @@ class CamRestBPETextField(BPETextField):
         # train, dev, test = encoded_data[:dev_thr], encoded_data[dev_thr:test_thr], encoded_data[test_thr:]
         return train, dev, test
 
-    def _load_data(self, save_temp=True):
+    def _load_data(self, save_temp=False):
         """
         load processed data and encode, or load already encoded data
         """
-        data = json.loads(open(self.data_path, 'r', encoding='utf-8').read().lower())
-        train, dev, test = self._split_data(data, self.split)
+        cnt_total_dialogue = 0
+        train, dev, test = {}, {}, {}
+        for file in self.data_path:
+            temp_data = json.loads(open(file, 'r', encoding='utf-8').read().lower())
+            data = {}
+            # update dialogue id bcs of dataset merging
+            for (k,v) in temp_data.items():
+                data.update({str(int(k)+cnt_total_dialogue):v})
+            cnt_total_dialogue += len(data)
+            tr, de, te = self._split_data(data, self.split)
+            for (k,v) in tr.items():
+                train.update({k:v})
+            for (k,v) in de.items():
+                dev.update({k:v})
+            for (k,v) in te.items():
+                test.update({k:v})
         self.data = {'train': train, 'dev': dev, 'test': test}
 
         if save_temp:  # save encoded data

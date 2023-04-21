@@ -36,6 +36,8 @@ def main():
                         help="Loading hparams setting from file(.json format).")
     parser.add_argument("--exp_setting", type=str, default='en',
                         help="Set the experiment setting [Dehan parsing].")
+    parser.add_argument("--mode", type=str, default='train',
+                        help="Set the mode (train or infer)")
     BPETextField.add_cmdline_argument(parser)
     Dataset.add_cmdline_argument(parser)
     Trainer.add_cmdline_argument(parser)
